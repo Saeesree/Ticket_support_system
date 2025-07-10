@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  tickets   Ticket[]
+}
+
+model Ticket {
+  id          Int      @id @default(autoincrement())
+  subject     String
+  description String
+  priority    String
+  status      String   @default("Open")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      Int      // ← CHANGED FROM String TO Int
+  user        User     @relation(fields: [userId], references: [id])
+}
