@@ -4,6 +4,7 @@ import { prisma } from '@/db/prisma';
 import { revalidatePath } from 'next/cache';
 import { logEvent } from '@/utils/sentry';
 import { getCurrentUser } from '@/lib/current-user';
+import { redirect } from 'next/navigation';
 
 // Create New Ticket
 export async function createTicket(
@@ -177,4 +178,47 @@ export async function closeTicket(
   revalidatePath(`/tickets/${ticketId}`);
 
   return { success: true, message: 'Ticket closed successfully' };
+}
+
+
+// delete ticket
+export async function deleteTicket(prevState:{success:boolean, message:string},
+   formData:FormData):Promise<{success:boolean, message:string}| never> {
+  const ticketId = Number(formData.get('ticketId'))
+  console.log('Delete started', ticketId);
+
+  if(!ticketId){
+    console.log('Error Deleting the ticket')
+    return{success:false, message:'Unable to delete ticket'}
+  }
+  try {
+    const user = await getCurrentUser();
+
+    if(!user){
+      return{success: false, message:'You must be logged to delete the ticket'};
+    }
+
+    const result = await prisma.ticket.deleteMany({
+      where:{
+        id:ticketId,
+        userId: user.id
+      }
+    });
+
+    if(result.count === 0){
+      
+      console.log('ticket not found')
+      return{success:false, message:'ticket not found'}
+    }
+    revalidatePath('/tickets')
+    // revalidatePath(`/tickets/${ticketId}`)
+    // redirect('/tickets');
+    return {success:true, message: 'ticket deleted successfully'}
+  } catch (error) {
+    console.log('error deleting the ticket')
+    return{success:false, message:'error deleting the ticket'}
+  }
+
+  
+
 }

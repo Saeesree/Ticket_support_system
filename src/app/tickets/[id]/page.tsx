@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getPriorityClass } from '@/utils/ui';
 import CloseTicketButton from '@/components/CloseTicketButton';
+import DeleteTicketButton from '@/components/DeleteTicketButton';
 
 const TicketDetailsPage = async (props: {
   params: Promise<{ id: string }>;
@@ -45,10 +46,14 @@ const TicketDetailsPage = async (props: {
         </Link>
 
         {ticket.status !== 'Closed' && (
-          <CloseTicketButton
+          <div className="flex gap-4">
+            <CloseTicketButton
             ticketId={ticket.id}
             isClosed={ticket.status === 'Closed'}
           />
+          <DeleteTicketButton ticketId={ticket.id}/>
+          </div>
+          
         )}
       </div>
     </div>
